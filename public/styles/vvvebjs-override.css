@@ -1,0 +1,322 @@
+/* public/styles/vvvebjs-override.css */
+
+/* === Variáveis de Cor e Sombra (Tema Dark Neumorphism) === */
+:root {
+  --vv-bg-main: #0d1117;
+  --vv-bg-panel-header: #101218;
+  --vv-bg-panel: #161b22;
+  --vv-bg-input: #0d1117;
+  --vv-border-color: #30363d;
+  --vv-border-darker: #21262d;
+  --vv-text-primary: #c9d1d9;
+  --vv-text-secondary: #8b949e;
+  --vv-accent-neon: #1E90FF;
+  --vv-accent-hover: #58a6ff;
+  --vv-accent-active-bg: #1a73e8; /* Um azul um pouco mais escuro para fundo ativo */
+  --vv-danger-color: #f85149;
+  --vv-white: #ffffff;
+
+  --vv-shadow-outset-strong: 5px 5px 10px rgba(0,0,0,0.6), -5px -5px 10px rgba(45, 45, 45, 0.1);
+  --vv-shadow-outset: 3px 3px 6px rgba(0,0,0,0.5), -3px -3px 6px rgba(40, 40, 40, 0.08);
+  --vv-shadow-inset: inset 2px 2px 5px rgba(0,0,0,0.5), inset -2px -2px 5px rgba(40, 40, 40, 0.08);
+  --vv-shadow-inset-light: inset 1px 1px 3px rgba(0,0,0,0.4), inset -1px -1px 3px rgba(40, 40, 40, 0.06);
+  --vv-neon-glow: 0 0 8px var(--vv-accent-neon);
+  --vv-neon-glow-strong: 0 0 12px var(--vv-accent-neon);
+}
+
+/* === Estilos Globais do Editor === */
+#vvveb-builder, body.vvveb-dragging { /* Aplicar fundo principal */
+  background-color: var(--vv-bg-main) !important;
+  color: var(--vv-text-primary) !important;
+}
+
+/* === Painel Superior (#top-panel) === */
+#top-panel {
+  background-color: var(--vv-bg-panel-header) !important;
+  border-bottom: 1px solid var(--vv-border-color) !important;
+  color: var(--vv-text-primary) !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important; /* Sombra sutil inferior */
+  display: flex !important;
+  align-items: center !important;
+  padding: 5px 10px !important;
+  gap: 10px !important; /* Espaço entre grupos */
+  height: 50px; /* Altura fixa para alinhar melhor */
+}
+#top-panel .btn-group, #top-panel > *, #top-panel .float-end {
+  margin: 0 !important; /* Resetar margens */
+  float: none !important; /* Resetar floats */
+}
+#top-panel #logo { max-height: 30px; margin-right: 15px; }
+/* Empurrar botões de salvar/preview para a direita */
+#top-panel .me-2.float-end { margin-left: auto !important; order: 99; /* Garante que fique no final */ }
+#top-panel .float-end.me-3 { order: 98; }
+
+/* === Painéis Laterais e Inferior === */
+#left-panel, #right-panel, #bottom-panel {
+  background-color: var(--vv-bg-panel) !important;
+  border-color: var(--vv-border-color) !important;
+  color: var(--vv-text-primary) !important;
+  box-shadow: var(--vv-shadow-outset-strong) !important;
+}
+#bottom-panel {
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.3) !important; /* Sombra superior */
+    background-color: var(--vv-bg-panel-header) !important;
+    border-top: 1px solid var(--vv-border-color) !important;
+    min-height: 35px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* === Headers e Abas dentro dos Painéis === */
+#left-panel .header, #right-panel .header,
+.component-properties > .nav-tabs, .drag-elements > .header > .nav-tabs,
+#vars-tabs {
+  background-color: var(--vv-bg-panel-header) !important;
+  border-bottom: 1px solid var(--vv-border-color) !important;
+  padding: 6px 8px !important;
+  min-height: 40px;
+  box-shadow: var(--vv-shadow-inset-light) !important;
+}
+.nav-tabs { margin-bottom: 0 !important; }
+.nav-tabs .nav-link {
+  color: var(--vv-text-secondary) !important;
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  padding: 8px 12px !important;
+  font-size: 0.85rem !important;
+  transition: all 0.2s ease-out;
+}
+.nav-tabs .nav-link:hover {
+  color: var(--vv-text-primary) !important;
+  border-bottom-color: var(--vv-border-color) !important;
+  background: none !important;
+}
+.nav-tabs .nav-link.active {
+  color: var(--vv-white) !important;
+  background-color: transparent !important;
+  border-bottom: 3px solid var(--vv-accent-neon) !important;
+  font-weight: 500;
+}
+.nav-tabs .nav-link i { margin-right: 5px; font-size: 1.15em; vertical-align: -2px; }
+.nav-tabs .nav-link span, .nav-tabs .nav-link div { display: inline; font-size: 0.95em; }
+
+/* === Botões (Geral) === */
+#vvveb-builder .btn {
+  background-color: var(--vv-bg-panel) !important;
+  border: 1px solid var(--vv-border-color) !important;
+  color: var(--vv-text-secondary) !important;
+  box-shadow: var(--vv-shadow-inset-light) !important;
+  transition: all 0.2s ease-out;
+  padding: 5px 10px !important;
+  font-size: 0.85rem !important;
+  border-radius: 4px !important;
+  display: inline-flex; /* Melhorar alinhamento do ícone/texto */
+  align-items: center;
+  justify-content: center;
+  gap: 5px; /* Espaço entre ícone e texto */
+}
+#vvveb-builder .btn:hover {
+  background-color: var(--vv-border-darker) !important;
+  border-color: var(--vv-accent-neon) !important;
+  color: var(--vv-white) !important;
+  box-shadow: var(--vv-shadow-inset), var(--vv-neon-glow) !important;
+}
+#vvveb-builder .btn.active,
+#vvveb-builder .btn:active,
+#vvveb-builder .btn[aria-pressed="true"] {
+  background-color: var(--vv-accent-active-bg) !important; /* Fundo azul */
+  border-color: var(--vv-accent-neon) !important;
+  color: var(--vv-white) !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), var(--vv-neon-glow-strong) !important;
+}
+/* Botões específicos */
+#top-panel .btn { height: 30px; padding: 0 8px !important;} /* Altura e padding para botões do topo */
+#top-panel .btn-primary {
+    background-color: var(--vv-accent-neon) !important;
+    border-color: var(--vv-accent-neon) !important;
+    color: var(--vv-white) !important;
+    box-shadow: var(--vv-neon-glow) !important;
+}
+#top-panel .btn-primary:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--vv-neon-glow-strong) !important;
+}
+.save-btn .button-text { display: flex; align-items: center; gap: 5px; }
+.save-btn .loading { display: inline-flex; align-items: center; gap: 5px; }
+.btn-outline-primary { border-color: var(--vv-accent-neon) !important; color: var(--vv-accent-neon) !important; background-color: transparent !important; box-shadow: none !important; }
+.btn-outline-primary:hover { background-color: rgba(30, 144, 255, 0.1) !important; color: var(--vv-accent-hover) !important; box-shadow: var(--vv-shadow-inset-light) !important; }
+.btn-outline-danger { border-color: var(--vv-danger-color) !important; color: var(--vv-danger-color) !important; background-color: transparent !important; box-shadow: none !important; }
+.btn-outline-danger:hover { background-color: var(--vv-danger-color) !important; color: var(--vv-white) !important; box-shadow: var(--vv-shadow-inset-light) !important; }
+.btn-light.border-0.btn-sm.btn-dark-mode { /* Botão dark mode */
+    box-shadow: none !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* === Inputs, Selects, Textareas === */
+.form-control, .form-select, textarea {
+  background-color: var(--vv-bg-input) !important;
+  border: 1px solid var(--vv-border-color) !important;
+  color: var(--vv-text-primary) !important;
+  box-shadow: var(--vv-shadow-inset) !important;
+  border-radius: 4px !important;
+  padding: 6px 10px !important;
+  font-size: 0.9rem;
+}
+.form-control:focus, .form-select:focus, textarea:focus {
+   border-color: var(--vv-accent-neon) !important;
+   box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.2), var(--vv-shadow-inset) !important;
+   outline: none !important;
+}
+.form-control::placeholder { color: var(--vv-text-secondary); opacity: 0.7; }
+.form-label { margin-bottom: 4px; font-size: 0.8rem; color: var(--vv-text-secondary); }
+.form-range { padding: 0 !important; } /* Remover padding do range */
+
+/* === Área do Canvas === */
+#canvas #iframe-wrapper {
+  border: 1px solid var(--vv-border-color) !important;
+  background-color: var(--vv-bg-main);
+  box-shadow: var(--vv-shadow-inset) !important;
+  border-radius: 5px;
+  overflow: hidden;
+}
+#iframe1 { background-color: var(--vv-white); } /* Fundo branco para a página editada */
+
+/* === Seleção e Highlight === */
+#highlight-box, #select-box {
+  outline: 2px solid var(--vv-accent-neon) !important;
+  box-shadow: 0 0 10px rgba(30, 144, 255, 0.8) !important;
+  border: none !important;
+  background-color: rgba(30, 144, 255, 0.08) !important;
+}
+#highlight-name {
+  background-color: var(--vv-accent-neon) !important;
+  color: var(--vv-white) !important;
+  padding: 3px 8px !important;
+  font-size: 0.8rem;
+  border-radius: 4px 4px 0 0;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.6);
+  font-weight: 500;
+}
+#select-actions {
+  background-color: rgba(16, 18, 24, 0.95) !important;
+  border: 1px solid var(--vv-border-color) !important;
+  border-radius: 5px;
+  padding: 4px;
+  box-shadow: var(--vv-shadow-outset);
+}
+#select-actions a {
+  color: var(--vv-text-secondary) !important;
+  padding: 5px !important;
+  margin: 0 2px;
+  border-radius: 3px;
+}
+#select-actions a:hover {
+  color: var(--vv-white) !important;
+  background-color: var(--vv-accent-neon) !important;
+}
+#select-box .resize div {
+    border: 1px solid var(--vv-accent-neon);
+    background: var(--vv-bg-panel);
+    box-shadow: var(--vv-shadow-outset);
+    width: 8px; height: 8px; border-radius: 2px;
+}
+
+/* === Paineis de Propriedades e Blocos === */
+.component-properties-sidepane, .drag-elements-sidepane {
+    background-color: var(--vv-bg-panel) !important;
+    padding: 10px; /* Adicionar padding geral */
+}
+.component-properties .tab-content, .drag-elements .tab-content { padding: 5px; }
+.component-properties label.header { /* Headers de seção/acordeão */
+    background-color: var(--vv-bg-panel-header) !important;
+    color: var(--vv-text-primary) !important;
+    border: 1px solid var(--vv-border-color) !important;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    box-shadow: var(--vv-shadow-outset) !important;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.component-properties label.header > span { font-weight: 500; font-size: 0.9rem; }
+.component-properties input.header_check:checked + label.header { /* Header ativo */
+    border-color: var(--vv-accent-neon);
+    box-shadow: var(--vv-shadow-outset), 0 0 5px rgba(30, 144, 255, 0.3) !important;
+}
+.component-properties input.header_check + div.section { /* Conteúdo do acordeão */
+    padding: 10px;
+    background-color: rgba(13, 17, 23, 0.3);
+    border: 1px solid var(--vv-border-darker);
+    border-radius: 4px;
+    margin-top: -9px; /* Sobrepor levemente o header */
+    margin-bottom: 15px;
+    box-shadow: var(--vv-shadow-inset);
+}
+/* Lista de Componentes/Blocos/Seções */
+.sections-list li, .components-list li, .blocks-list li {
+    background-color: var(--vv-bg-panel-header) !important;
+    border: 1px solid var(--vv-border-color) !important;
+    box-shadow: var(--vv-shadow-outset) !important;
+    border-radius: 4px;
+}
+.sections-list li:hover, .components-list li:hover, .blocks-list li:hover {
+    border-color: var(--vv-accent-neon) !important;
+    box-shadow: var(--vv-shadow-outset), var(--vv-neon-glow) !important;
+}
+.sections-list li .name, .components-list li .name, .blocks-list li .name {
+    color: var(--vv-text-primary) !important;
+    font-weight: 500;
+}
+.sections-list li .type, .components-list li .type, .blocks-list li .type {
+    color: var(--vv-text-secondary) !important;
+}
+
+/* === Tree / File Manager === */
+#tree-list, #filemanager { background-color: var(--vv-bg-panel) !important; }
+#tree-list .header, #filemanager .header { background-color: var(--vv-bg-panel-header) !important; border-bottom: 1px solid var(--vv-border-color) !important; padding: 8px 12px !important; color: var(--vv-text-primary); display: flex; justify-content: space-between; align-items: center; }
+#tree-list ol, #filemanager ol { padding: 8px; }
+#tree-list ol li label, #filemanager ol li label { color: var(--vv-text-primary) !important; border-bottom: 1px solid var(--vv-border-darker) !important; padding: 6px 8px; border-radius: 3px; margin-bottom: 3px; transition: background-color 0.2s ease; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+#tree-list ol li label:hover, #filemanager ol li label:hover { background-color: var(--vv-bg-panel-header) !important; }
+#tree-list ol li.active > label, #filemanager ol li.active > label { background-color: var(--vv-accent-active-bg) !important; color: var(--vv-white) !important; border-color: var(--vv-accent-neon) !important; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
+#filemanager .file-actions { display: flex; gap: 5px; }
+#filemanager .file-actions .btn { padding: 2px 5px !important; font-size: 0.75rem; background: transparent !important; border: none !important; box-shadow: none !important; }
+#filemanager .file-actions .btn:hover { background: var(--vv-border-darker) !important; }
+
+/* === Modais === */
+.modal-content { background-color: var(--vv-bg-panel) !important; border: 1px solid var(--vv-border-color) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important; border-radius: 6px; }
+.modal-header { background-color: var(--vv-bg-panel-header) !important; border-bottom: 1px solid var(--vv-border-color) !important; color: var(--vv-text-primary) !important; }
+.modal-header .btn-close { filter: invert(0.8) grayscale(100%) brightness(1.5); }
+.modal-body { color: var(--vv-text-primary) !important; }
+.modal-footer { background-color: var(--vv-bg-panel-header) !important; border-top: 1px solid var(--vv-border-color) !important; }
+
+/* === Scrollbars === */
+::-webkit-scrollbar { width: 10px; height: 10px;}
+::-webkit-scrollbar-track { background: var(--vv-bg-panel-header); border-radius: 5px;}
+::-webkit-scrollbar-thumb { background-color: var(--vv-border-color); border-radius: 5px; border: 2px solid var(--vv-bg-panel-header); }
+::-webkit-scrollbar-thumb:hover { background-color: var(--vv-text-secondary); }
+
+/* === Ícones === */
+i.la, i[class^="icon-"] {
+    color: var(--vv-text-secondary);
+    vertical-align: -2px; /* Ajuste fino no alinhamento vertical */
+}
+#vvveb-builder .btn:hover i, #vvveb-builder .btn.active i, .nav-link.active i, #select-actions a:hover i {
+   color: var(--vv-white) !important;
+}
+#top-panel .btn i { font-size: 1.2em; } /* Ícones do topo um pouco maiores */
+
+/* === Breadcrumb === */
+.breadcrumb-navigator { background-color: var(--vv-bg-panel-header) !important; border-top: 1px solid var(--vv-border-color) !important; padding: 5px 10px !important; }
+.breadcrumb { margin-bottom: 0 !important; }
+.breadcrumb-item a { color: var(--vv-text-secondary) !important; font-size: 0.8rem; }
+.breadcrumb-item.active a, .breadcrumb-item a:hover { color: var(--vv-accent-neon) !important; }
+.breadcrumb-item + .breadcrumb-item::before { color: var(--vv-text-secondary) !important; padding: 0 5px; }
+
+/* === Editor de Código Inferior === */
+#vvveb-code-editor { border-top: 1px solid var(--vv-border-color); }
+#vvveb-code-editor textarea { background-color: #010409 !important; /* Ainda mais escuro */ color: #c9d1d9; font-family: 'Courier New', Courier, monospace; box-shadow: none !important; border: none !important; font-size: 0.9rem; }
