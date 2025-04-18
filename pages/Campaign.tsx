@@ -1,7 +1,89 @@
-// ... imports e definição do componente ...
+// pages/Campaign.tsx
+import React, { useState, useEffect, useCallback } from 'react';
+import Head from 'next/head';
+import { useAuth } from '@/context/AuthContext'; // <<< AUTENTICAÇÃO
+import { useRouter } from 'next/router';       // <<< AUTENTICAÇÃO
+import Layout from '@/components/layout';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Campaign } from '@/entities/Campaign';
+import axios from 'axios';
+import { Trash2, Edit, PlusCircle, Loader2, ChevronUp, ChevronDown } from 'lucide-react'; // <<< AUTENTICAÇÃO (Loader2)
+import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
+import { MultiSelectPopover } from "@/components/ui/multi-select-popover";
+
+// Mova a interface para antes do componente
+interface CampaignPageProps {
+  initialCampaigns?: Campaign[];
+}
+
+// Componente FormFieldCard (como antes)
+interface FormFieldCardProps { children: React.ReactNode; className?: string; }
+const FormFieldCard: React.FC<FormFieldCardProps> = ({ children, className }) => ( <Card className={cn( "bg-[#141414]/50", "shadow-[inset_1px_1px_2px_rgba(0,0,0,0.3),inset_-1px_-1px_2px_rgba(255,255,255,0.03)]", "rounded-md p-2", "border-none", "flex flex-col gap-1", className )}> {children} </Card> );
+
+// Opções Multi-Select (como antes)
+const platformOptions = [ { value: "google_ads", label: "Google Ads" }, { value: "meta_ads", label: "Meta Ads" }, { value: "tiktok_ads", label: "TikTok Ads" }, { value: "linkedin_ads", label: "LinkedIn Ads" }, { value: "other", label: "Outra" }, ];
+const objectiveOptions = [ { value: "conversao", label: "Conversão" }, { value: "leads", label: "Leads" }, { value: "trafego", label: "Tráfego" }, { value: "reconhecimento", label: "Reconhecimento" }, { value: "vendas_catalogo", label: "Vendas Catálogo" }, ];
+const adFormatOptions = [ { value: "imagem", label: "Imagem" }, { value: "video", label: "Vídeo" }, { value: "carrossel", label: "Carrossel" }, { value: "colecao", label: "Coleção" }, { value: "search", label: "Search" }, { value: "display", label: "Display" }, ];
 
 export default function CampaignPage({ initialCampaigns = [] }: CampaignPageProps) {
-  // ... estados, efeitos e funções ...
+  // --- Autenticação e Roteamento ---
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const router = useRouter();
+
+  // --- Estados da Página ---
+  const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const initialFormData = { name: '', industry: '', targetAudience: '', platform: [], objective: [], budget: '0', daily_budget: '0', segmentation: '', adFormat: [], duration: '0' };
+  const [formData, setFormData] = useState<any>(initialFormData);
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Loading de dados da página
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // --- Constantes de Estilo (como antes) ---
+  const neonColor = '#1E90FF'; const neonColorMuted = '#4682B4'; const neonRedColor = '#FF4444';
+  const cardStyle = "bg-[#141414]/80 backdrop-blur-sm shadow-[5px_5px_10px_rgba(0,0,0,0.4),-5px_-5px_10px_rgba(255,255,255,0.05)] rounded-lg border-none";
+  const neumorphicInputStyle = "bg-[#141414] text-white shadow-[inset_2px_2px_4px_rgba(0,0,0,0.3),inset_-2px_-2px_4px_rgba(255,255,255,0.05)] placeholder:text-gray-500 border-none focus:ring-2 focus:ring-[#1E90FF] focus:ring-offset-2 focus:ring-offset-[#0e1015] h-9 text-sm px-3 py-2";
+  const neumorphicTextAreaStyle = cn(neumorphicInputStyle, "min-h-[80px] py-2");
+  const neumorphicButtonStyle = "bg-[#141414] border-none text-white shadow-[3px_3px_6px_rgba(0,0,0,0.3),-3px_-3px_6px_rgba(255,255,255,0.05)] hover:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.3),inset_-2px_-2px_4px_rgba(255,255,255,0.05)] hover:bg-[#1E90FF]/80 active:scale-[0.98] active:brightness-95 transition-all duration-150 ease-out h-9 px-3 text-sm";
+  const primaryNeumorphicButtonStyle = cn(neumorphicButtonStyle, "bg-[#1E90FF]/80 hover:bg-[#1E90FF]/100");
+  const stepperButtonStyle = cn( "bg-[#141414]/70 border-none text-white shadow-[2px_2px_4px_rgba(0,0,0,0.3),-2px_-2px_4px_rgba(255,255,255,0.05)]", "h-5 w-5 p-0 min-w-0 rounded", "hover:brightness-110 hover:bg-[#1E90FF]/20", "active:shadow-[inset_1px_1px_2px_rgba(0,0,0,0.3),inset_-1px_-1px_2px_rgba(255,255,255,0.03)] active:scale-[0.97] active:brightness-90", "text-blue-400 hover:text-blue-300", );
+  const iconStyle = { filter: `drop-shadow(0 0 3px ${neonColorMuted})` };
+  const primaryIconStyle = { filter: `drop-shadow(0 0 3px ${neonColor})` };
+  const labelStyle = "text-xs text-gray-300 mb-0.5";
+
+  // --- Lógica de Proteção de Rota ---
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      console.log(`[Auth Guard /Campaign] Usuário não autenticado, redirecionando para /login`);
+      router.push('/login');
+    }
+    // Carrega dados da página *após* confirmar autenticação
+    if (!authLoading && isAuthenticated && (!initialCampaigns || initialCampaigns.length === 0)) {
+        fetchCampaignsEffect();
+    }
+    // Se initialCampaigns foi fornecido e está autenticado, define o estado
+    else if (!authLoading && isAuthenticated && initialCampaigns && initialCampaigns.length > 0 && campaigns.length === 0) {
+        setCampaigns(initialCampaigns);
+        setIsLoading(false); // Marca como não carregando se dados iniciais foram usados
+    }
+  }, [authLoading, isAuthenticated, router, initialCampaigns]); // Adicionado initialCampaigns
+
+
+  // --- Funções da Página (fetchCampaignsEffect, handlers, resetForm como antes) ---
+  const fetchCampaignsEffect = useCallback(async () => { setIsLoading(true); setError(null); try { const response = await axios.get('/api/campaigns', { headers: { 'Cache-Control': 'no-cache' } }); const fetchedCampaigns = response.data.map((camp: any) => ({ ...camp, platform: Array.isArray(camp.platform) ? camp.platform : (camp.platform ? [String(camp.platform)] : []), objective: Array.isArray(camp.objective) ? camp.objective : (camp.objective ? [String(camp.objective)] : []), adFormat: Array.isArray(camp.adFormat) ? camp.adFormat : (camp.adFormat ? [String(camp.adFormat)] : []), })); setCampaigns(fetchedCampaigns); } catch (err: any) { setError("Falha ao carregar campanhas."); toast({ title: "Erro", description: "Falha ao carregar campanhas.", variant: "destructive" }); } finally { setIsLoading(false); } }, [toast]);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => { const { name, value } = e.target; setFormData((prev: any) => ({ ...prev, [name]: value })); };
+  const handleNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { const { name, value } = e.target; if (value === '' || value === '-' || /^-?\d*\.?\d*$/.test(value)) { setFormData((prev: any) => ({ ...prev, [name]: value })); } };
+  const handleMultiSelectChange = (name: string) => (selectedValues: string[]) => { setFormData((prev: any) => ({ ...prev, [name]: selectedValues, })); };
+  const handleStepChange = (name: 'budget' | 'daily_budget' | 'duration', direction: 'up' | 'down') => { setFormData((prev: any) => { const currentValue = parseFloat(prev[name] || '0'); const step = name === 'duration' ? 1 : (name === 'budget' ? 10 : 1); const precision = (name === 'duration') ? 0 : 2; let newValue = direction === 'up' ? currentValue + step : currentValue - step; newValue = Math.max(0, newValue); return { ...prev, [name]: newValue.toFixed(precision) }; }); };
+  const handleSave = async (e: React.FormEvent) => { e.preventDefault(); setIsLoading(true); setError(null); const budgetValue = parseFloat(formData.budget || '0'); const dailyBudgetValue = parseFloat(formData.daily_budget || '0'); const durationValue = parseInt(formData.duration || '0', 10); if (!formData.name) { setError("O nome da campanha é obrigatório."); setIsLoading(false); toast({ title: "Erro", description: "O nome da campanha é obrigatório.", variant: "destructive" }); return; } if (isNaN(budgetValue) || isNaN(dailyBudgetValue) || isNaN(durationValue) || budgetValue < 0 || dailyBudgetValue < 0 || durationValue < 0) { setError("Orçamento e duração devem ser números válidos e não negativos."); setIsLoading(false); toast({ title: "Erro", description: "Orçamento e duração devem ser números válidos.", variant: "destructive" }); return; } const campaignData = { ...formData, budget: budgetValue, daily_budget: dailyBudgetValue, duration: durationValue, }; console.log('Dados enviados para o backend:', campaignData); try { if (selectedCampaign) { await axios.put(`/api/campaigns?id=${selectedCampaign.id}`, campaignData); toast({ title: "Campanha Atualizada", description: `Campanha "${formData.name}" atualizada.` }); } else { await axios.post('/api/campaigns', campaignData); toast({ title: "Campanha Criada", description: `Campanha "${formData.name}" criada.` }); } resetForm(); await fetchCampaignsEffect(); } catch (error: any) { console.error("Erro ao salvar campanha:", error.response?.data || error.message); const errorMsg = error.response?.data?.message || "Falha ao salvar campanha."; setError(errorMsg); toast({ title: "Erro", description: errorMsg, variant: "destructive" }); } finally { setIsLoading(false); } };
+  const handleEdit = (campaign: Campaign) => { setSelectedCampaign(campaign); setFormData({ ...campaign, platform: Array.isArray(campaign.platform) ? campaign.platform : (campaign.platform ? [String(campaign.platform)] : []), objective: Array.isArray(campaign.objective) ? campaign.objective : (campaign.objective ? [String(campaign.objective)] : []), adFormat: Array.isArray(campaign.adFormat) ? campaign.adFormat : (campaign.adFormat ? [String(campaign.adFormat)] : []), budget: campaign.budget?.toString() ?? '0', daily_budget: campaign.daily_budget?.toString() ?? '0', duration: campaign.duration?.toString() ?? '0' }); setError(null); };
+  const handleDelete = async (id: string | number) => { if (!confirm("Tem certeza que deseja excluir esta campanha?")) return; setIsLoading(true); setError(null); try { await axios.delete(`/api/campaigns?id=${id}`); resetForm(); await fetchCampaignsEffect(); toast({ title: "Campanha Excluída" }); } catch (error: any) { const errorMsg = error.response?.data?.message || "Falha ao excluir campanha."; setError(errorMsg); toast({ title: "Erro", description: errorMsg, variant: "destructive" }); } finally { setIsLoading(false); } };
+  const resetForm = () => { setFormData(initialFormData); setSelectedCampaign(null); setError(null); };
 
   // --- Renderização Condicional ---
   if (authLoading) {
