@@ -62,7 +62,7 @@ export default function ChatPage({ }: ChatPageProps) {
     const API_CAMPAIGNS_URL = '/api/campaigns';
     const API_COPIES_URL = '/api/copies';
 
-    const neonColor = '#1E90FF'; 
+    const neonColor = '#1E90FF';
     const neonColorMuted = '#4682B4';
     const cardStyle = "bg-[#141414]/80 backdrop-blur-sm shadow-[5px_5px_10px_rgba(0,0,0,0.4),-5px_-5px_10px_rgba(255,255,255,0.05)] rounded-lg border-none";
     const insetCardStyle = "bg-[#141414]/50 shadow-[inset_1px_1px_2px_rgba(0,0,0,0.3),inset_-1px_-1px_2px_rgba(255,255,255,0.03)] rounded-md border-none";
@@ -110,15 +110,15 @@ export default function ChatPage({ }: ChatPageProps) {
 
     const generateContext = useCallback(async () => {
         if (campaignsLoading || !isAuthenticated) return;
-        
+
         setContextLoading(true);
         let contextData = "Contexto não disponível.";
-        
+
         try {
             if (contextCampaignId === "__general__") {
                 const campaignsResponse = await axios.get(`${API_CAMPAIGNS_URL}?limit=3&sort=created_at:desc`);
                 const campaigns: SimpleCampaignChatInfo[] = campaignsResponse.data;
-                
+
                 let campaignSummary = "Resumo das 3 campanhas mais recentes:\n";
                 if (campaigns.length === 0) {
                     campaignSummary += "Nenhuma campanha disponível.\n";
@@ -127,10 +127,10 @@ export default function ChatPage({ }: ChatPageProps) {
                         campaignSummary += `${i+1}. Nome: ${camp.name || 'N/A'}, Plataforma: ${camp.platform || 'N/A'}, Objetivo: ${camp.objective || 'N/A'}\n`;
                     });
                 }
-                
+
                 const copiesResponse = await axios.get(`${API_COPIES_URL}?limit=3&sort=created_at:desc`);
                 const copies: CopyInfo[] = copiesResponse.data;
-                
+
                 let copySummary = "\nResume dos 3 textos mais recentes:\n";
                 if (copies.length === 0) {
                     copySummary += "Nenhum texto disponível.\n";
@@ -143,21 +143,21 @@ export default function ChatPage({ }: ChatPageProps) {
                         }
                     });
                 }
-                
+
                 contextData = campaignSummary + copySummary;
             } else {
                 const campaignResponse = await axios.get(`${API_CAMPAIGNS_URL}/${contextCampaignId}`);
                 const campaign = campaignResponse.data;
-                
+
                 let campaignDetail = `Detalhes da Campanha "${campaign.name}":\n`;
                 campaignDetail += `Plataforma: ${campaign.platform || 'N/A'}\n`;
                 campaignDetail += `Orçamento: R$ ${campaign.daily_budget || 'N/A'} / dia\n`;
                 campaignDetail += `Duração: ${campaign.duration || 'N/A'} dias\n`;
                 campaignDetail += `Objetivo: ${campaign.objective || 'N/A'}\n`;
-                
+
                 const copiesResponse = await axios.get(`${API_COPIES_URL}?campaign_id=${contextCampaignId}`);
                 const copies: CopyInfo[] = copiesResponse.data;
-                
+
                 let copySummary = "\nTextos desta campanha:\n";
                 if (copies.length === 0) {
                     copySummary += "Nenhum texto disponível para esta campanha.\n";
@@ -171,7 +171,7 @@ export default function ChatPage({ }: ChatPageProps) {
                         }
                     });
                 }
-                
+
                 contextData = campaignDetail + copySummary;
             }
         } catch (error: any) {
@@ -185,7 +185,7 @@ export default function ChatPage({ }: ChatPageProps) {
 
     const checkModelStatus = useCallback(async () => {
         setModelStatus('Verificando...');
-        
+
         try {
             if (modelSettings.providerType === 'local') {
                 try {
@@ -243,19 +243,19 @@ export default function ChatPage({ }: ChatPageProps) {
 
     const handleSendMessage = async () => {
         if (!input.trim() || loading) return;
-        
+
         const userMessage = { role: 'user' as const, content: input.trim() };
         setMessages(prev => [...prev, userMessage]);
         setLoading(true);
         setInput('');
-        
+
         try {
             const contextInfo = `CONTEXTO DE MARKETING:\n${context}\n\nBASEADO NO CONTEXTO ACIMA, RESPONDA:`;
             const prompt = `${contextInfo}\n\n${userMessage.content}`;
-            
+
             const response = await callApiLLM(prompt);
             const assistantResponse = { role: 'assistant' as const, content: response?.text || "Desculpe, não consegui processar sua solicitação." };
-            
+
             setMessages(prev => [...prev, assistantResponse]);
         } catch (error: any) {
             setMessages(prev => [...prev, { role: 'assistant', content: `Erro: ${error.message || 'Falha ao processar resposta'}` }]);
@@ -267,11 +267,11 @@ export default function ChatPage({ }: ChatPageProps) {
 
     const callApiLLM = async (prompt: string, response_json_schema?: object): Promise<any> => {
         let requestBody: any = { prompt };
-        
+
         if (response_json_schema) {
             requestBody.response_format = { type: "json_object", schema: response_json_schema };
         }
-        
+
         if (modelSettings.providerType === 'local') {
             requestBody.url = modelSettings.localServerUrl;
             requestBody.provider = 'local';
@@ -289,27 +289,27 @@ export default function ChatPage({ }: ChatPageProps) {
             requestBody.url = modelSettings.customApiUrl;
             requestBody.api_key = modelSettings.apiKey;
         }
-        
+
         requestBody.temperature = modelSettings.temperature;
         requestBody.max_tokens = modelSettings.maxTokens;
         requestBody.repetition_penalty = modelSettings.repetitionPenalty;
-        
+
         const response = await axios.post(API_LLM_URL, requestBody);
         return response.data;
     };
 
     const handleSendIaMessage = async () => {
         if (!promptInput.trim() || iaChatLoading) return;
-        
+
         const userMessage = { role: 'user' as const, content: promptInput.trim() };
         setIaMessages(prev => [...prev, userMessage]);
         setIaChatLoading(true);
         setPromptInput('');
-        
+
         try {
             const response = await callApiLLM(userMessage.content);
             const assistantResponse = { role: 'assistant' as const, content: response?.text || "Desculpe, não consegui processar sua solicitação." };
-            
+
             setIaMessages(prev => [...prev, assistantResponse]);
         } catch (error: any) {
             setIaMessages(prev => [...prev, { role: 'assistant', content: `Erro: ${error.message || 'Falha ao processar resposta'}` }]);
@@ -335,18 +335,18 @@ export default function ChatPage({ }: ChatPageProps) {
             toast({ title: "Conversa vazia", description: "Não há mensagens para salvar" });
             return;
         }
-        
+
         const newConversation: Conversation = {
             id: Date.now().toString(),
             title: messages[1].content.substring(0, 30) + (messages[1].content.length > 30 ? '...' : ''),
             date: new Date().toISOString(),
             messages: [...messages]
         };
-        
+
         const updatedConversations = [...savedConversations, newConversation];
         setSavedConversations(updatedConversations);
         localStorage.setItem('savedConversations', JSON.stringify(updatedConversations));
-        
+
         toast({ title: "Conversa salva", description: "Você pode acessá-la na aba Histórico" });
     };
 
@@ -396,21 +396,21 @@ export default function ChatPage({ }: ChatPageProps) {
 
     const loadLocalModel = async () => {
         if (!selectedFile) return;
-        
+
         setLoadingModel(true);
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             const modelName = selectedFile.name.replace(/\.(gguf|bin|onnx|safetensors)$/, '');
             handleSettingsChange('localModelName', modelName);
-            
+
             setLocalModelOptions(prev => {
                 if (!prev.includes(modelName)) {
                     return [...prev, modelName];
                 }
                 return prev;
             });
-            
+
             toast({ title: "Modelo configurado", description: `Nome do modelo definido: ${modelName}`, duration: 5000 });
         } catch (e) {
             toast({ title: "Erro ao configurar modelo", description: "Ocorreu um erro ao definir o modelo", variant: "destructive" });
@@ -435,16 +435,16 @@ export default function ChatPage({ }: ChatPageProps) {
         }
     }, [isAuthenticated, campaignsLoading, pageError, contextCampaignId, generateContext]);
 
-    useEffect(() => { 
-        checkModelStatus(); 
+    useEffect(() => {
+        checkModelStatus();
     }, [checkModelStatus]);
-    
-    useEffect(() => { 
-        scrollToBottom(); 
+
+    useEffect(() => {
+        scrollToBottom();
     }, [messages]);
-    
-    useEffect(() => { 
-        chatIaEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
+
+    useEffect(() => {
+        chatIaEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [iaMessages]);
 
     if (authLoading || campaignsLoading) {
@@ -457,11 +457,11 @@ export default function ChatPage({ }: ChatPageProps) {
             </Layout>
         );
     }
-    
+
     if (!isAuthenticated) {
         return null;
     }
-    
+
     if (pageError) {
         return (
             <Layout>
@@ -520,7 +520,7 @@ export default function ChatPage({ }: ChatPageProps) {
                                                 <SelectContent>
                                                     <SelectItem value="__general__">Contexto Geral</SelectItem>
                                                     {campaignOptions.map(camp => (
-                                                        <SelectItem key={camp.id} value={camp.id}>{camp.name}</SelectItem>
+                                                        <SelectItem key={camp.id} value={camp.id ? String(camp.id) : ''}>{camp.name}</SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
@@ -795,19 +795,6 @@ export default function ChatPage({ }: ChatPageProps) {
                                                 </div>
                                             )}
 
-                                            {modelSettings.providerType === 'custom' && (
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="custom-api-url">URL API Customizada</Label>
-                                                    <Input
-                                                        id="custom-api-url"
-                                                        value={modelSettings.customApiUrl}
-                                                        onChange={(e) => handleSettingsChange('customApiUrl', e.target.value)}
-                                                        className={neumorphicInputStyle}
-                                                        placeholder="https://api.exemplo.com/v1/chat/completions"
-                                                    />
-                                                </div>
-                                            )}
-
                                             <div className="space-y-2">
                                                 <Label htmlFor="temperature" className="flex justify-between">
                                                     <span>Temperatura</span>
@@ -930,36 +917,36 @@ export default function ChatPage({ }: ChatPageProps) {
                             </CardHeader>
                             <CardContent className="p-3 pt-0">
                                 <div className="space-y-2 text-sm">
-                                    <Button 
-                                        variant="ghost" 
+                                    <Button
+                                        variant="ghost"
                                         className={cn(insetCardStyle, "w-full justify-start text-xs p-2 h-auto")}
                                         onClick={() => setInput("Crie 3 títulos atrativos para um anúncio de Facebook sobre venda de cursos de marketing digital.")}
                                     >
                                         Crie títulos para anúncio no Facebook
                                     </Button>
-                                    <Button 
-                                        variant="ghost" 
+                                    <Button
+                                        variant="ghost"
                                         className={cn(insetCardStyle, "w-full justify-start text-xs p-2 h-auto")}
                                         onClick={() => setInput("Analise o público-alvo ideal para uma campanha de marketing de imóveis de luxo.")}
                                     >
                                         Analisar público-alvo para campanha
                                     </Button>
-                                    <Button 
-                                        variant="ghost" 
+                                    <Button
+                                        variant="ghost"
                                         className={cn(insetCardStyle, "w-full justify-start text-xs p-2 h-auto")}
                                         onClick={() => setInput("Sugira 5 CTAs eficazes para uma landing page de venda de infoprodutos.")}
                                     >
                                         Sugestões de CTAs para landing page
                                     </Button>
-                                    <Button 
-                                        variant="ghost" 
+                                    <Button
+                                        variant="ghost"
                                         className={cn(insetCardStyle, "w-full justify-start text-xs p-2 h-auto")}
                                         onClick={() => setInput("Crie um texto persuasivo de 3 parágrafos para email marketing sobre um workshop gratuito.")}
                                     >
                                         Texto para email marketing
                                     </Button>
-                                    <Button 
-                                        variant="ghost" 
+                                    <Button
+                                        variant="ghost"
                                         className={cn(insetCardStyle, "w-full justify-start text-xs p-2 h-auto")}
                                         onClick={() => setInput("Quais são as melhores estratégias de remarketing para e-commerce em 2025?")}
                                     >
