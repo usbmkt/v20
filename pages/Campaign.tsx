@@ -168,6 +168,6 @@ export default function CampaignPage({ initialCampaigns = [] }: CampaignPageProp
           </div>
         </div>
       </Layout> {/* Layout agora é o elemento pai */}
-    </> {/* Adicionado Fragment aqui */}
+    </> // <-- Tag de fechamento do Fragment movida para a última linha antes do );
   );
 }
